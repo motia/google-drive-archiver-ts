@@ -1,0 +1,9 @@
+# JSON file obtained
+config.json
+
+# Authentication token
+token.json
+
+node_modules
+
+build
