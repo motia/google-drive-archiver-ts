@@ -1,9 +1,11 @@
 {
   "dependencies": {
     "archiver": "^3.1.1",
+    "aws-sdk": "^2.610.0",
     "googleapis": "39"
   },
   "devDependencies": {
+    "@types/archiver": "^3.0.0",
     "@types/gapi": "^0.0.39",
     "@types/node": "^13.5.3"
   }

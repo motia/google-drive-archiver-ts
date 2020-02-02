@@ -1,21 +1,49 @@
 import { CREDENTIALS_PATH } from "./consts";
 import * as fs from 'fs';
 
-interface ProjectConfig { 
-  googleDriveCredentials: Object; googleDriveRoot: string
+export interface GoogleDriveCredentials {
+  installed: {client_secret: string, client_id: string, redirect_uris: string[]}
 }
 
-type onConfigLoaded = (e: Error | null, config: ProjectConfig | null) => void
+export interface ProjectConfig { 
+  googleDriveCredentials: GoogleDriveCredentials;
+  googleDriveRoot: string,
+  backUpCount: number,
+  archivePrefix: string,
+  s3: { accessKey: string, secretKey: string, bucketName: string },
+}
 
-export const loadProjectConfig = function (callback: onConfigLoaded) {
+const assertKeyExist = function (obj: any, k: string) {
+  if (obj[k] === undefined) {
+    throw new Error(`${k} is missing`);
+  }
+}
+
+export const loadProjectConfig = function (): ProjectConfig {
   // Load client secrets from a local file.
-  fs.readFile(CREDENTIALS_PATH, function (err, data) {
-    if (err) {
-      callback(err, null);
-    } else if (!data) {
-      callback(Error('Data is empty'), null);
-    } else {
-      callback(null, JSON.parse(data as any as string));
-    }
+  const content = fs.readFileSync(CREDENTIALS_PATH);
+  const data: ProjectConfig = JSON.parse(content as any as string);
+
+  [
+    'googleDriveCredentials',
+    'googleDriveRoot',
+    'backUpCount',
+    'archivePrefix'
+  ].forEach(k => {
+    assertKeyExist(data, k);
   });
+
+  [
+    'accessKey',
+    'secretKey',
+    'bucketName',
+  ].forEach(k => {
+    assertKeyExist(data.s3, k);
+  });
+  data.backUpCount = parseInt(`${data.backUpCount}`);
+  if (isNaN(data.backUpCount)) {
+    throw new Error('Backup count must be an integer')
+  }
+
+  return data;
 }
